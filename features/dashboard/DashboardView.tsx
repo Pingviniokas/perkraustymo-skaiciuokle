@@ -112,11 +112,11 @@ const DashboardView: React.FC = () => {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          outerRadius={window.innerWidth < 640 ? 60 : 100}
+                          outerRadius={typeof window !== 'undefined' && window.innerWidth < 640 ? 60 : 100}
                           fill="#8884d8"
                           dataKey="value"
                           nameKey="name"
-                          label={({ name, percent }) => window.innerWidth < 640 ? `${(percent * 100).toFixed(0)}%` : `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => typeof window !== 'undefined' && window.innerWidth < 640 ? `${(percent * 100).toFixed(0)}%` : `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                           {monthlyExpenseData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
