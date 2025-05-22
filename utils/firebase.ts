@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 // Firebase configuration - uses environment variables only
 const firebaseConfig = {
@@ -17,6 +18,9 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+// Initialize Authentication
+export const auth = getAuth(app);
 
 // For development/testing, you can use the Firestore emulator
 // Uncomment the line below if you want to use local emulator during development

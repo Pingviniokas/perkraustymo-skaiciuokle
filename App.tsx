@@ -6,22 +6,22 @@ import ReportsView from './features/reports/ReportsView';
 import DashboardView from './features/dashboard/DashboardView';
 import LoginView from './features/auth/LoginView'; 
 import { AppProvider } from './contexts/AppContext'; 
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HomeIcon, TruckIcon, CurrencyEuroIcon, UsersIcon, DocumentChartBarIcon, MenuIcon, XIcon } from './components/icons/Icons'; 
 
 type View = 'dashboard' | 'orders' | 'expenses' | 'employees' | 'reports';
 
-const App: React.FC = () => {
+const MainApp: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('dashboard');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false); 
+  
+  const { isAuthenticated, loading, logout, currentUser } = useAuth();
 
-  const LOGIN_CODE = "199011"; // Šis kodas bus naudojamas X-Auth-Code antraštėje API užklausoms
-
-  const handleLogin = (code: string) => {
-    if (code === LOGIN_CODE) {
-      setIsAuthenticated(true);
-    } else {
-      alert("Neteisingas prisijungimo kodas!");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -50,8 +50,25 @@ const App: React.FC = () => {
     { id: 'reports', label: 'Ataskaitos', icon: <DocumentChartBarIcon className="w-5 h-5 mr-2" /> },
   ];
 
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-100">
+        <div className="text-center">
+          <img 
+            src="https://mesjaucia.lt/wp-content/themes/mjcDesign/images/logoMJC.png" 
+            alt="MES JAU ČIA Logo" 
+            className="h-16 mx-auto mb-4 animate-pulse" 
+          />
+          <p className="text-xl text-neutral-700">Kraunasi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
   if (!isAuthenticated) {
-    return <LoginView onLoginSuccess={handleLogin} />;
+    return <LoginView />;
   }
 
   return (
@@ -71,17 +88,32 @@ const App: React.FC = () => {
               <span className="sm:hidden">MJČ skaičiuolė</span>
             </h1>
             
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-md hover:bg-neutral-800 transition-colors"
-            >
-              {isMobileMenuOpen ? (
-                <XIcon className="w-6 h-6" />
-              ) : (
-                <MenuIcon className="w-6 h-6" />
-              )}
-            </button>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* User info and logout */}
+              <div className="hidden sm:flex items-center space-x-2 text-sm">
+                <span className="text-neutral-300">Prisijungęs:</span>
+                <span className="text-white">{currentUser?.email}</span>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="text-sm px-3 py-1 rounded-md bg-neutral-700 hover:bg-neutral-600 transition-colors"
+              >
+                Atsijungti
+              </button>
+              
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden p-2 rounded-md hover:bg-neutral-800 transition-colors"
+              >
+                {isMobileMenuOpen ? (
+                  <XIcon className="w-6 h-6" />
+                ) : (
+                  <MenuIcon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
         </header>
         
@@ -174,6 +206,14 @@ const App: React.FC = () => {
         </footer>
       </div>
     </AppProvider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 };
 
