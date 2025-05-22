@@ -29,41 +29,51 @@ const OrderList: React.FC<OrderListProps> = ({ orders, onEditOrder }) => {
         const extraKmLabel = order.serviceType === ServiceType.MOVING ? "KM užmiestyje" : "KM";
 
         return (
-            <Card key={order.id} className="hover:shadow-xl transition-shadow duration-200">
-                <div className="p-5">
+            <Card key={order.id} className="hover:shadow-lg transition-shadow duration-200">
+                <div className="p-3 sm:p-5">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-start mb-3 pb-3 border-b border-neutral-200">
-                        <div>
-                            <h3 className="text-lg font-semibold text-neutral-700">{order.clientName}</h3>
-                            <p className="text-xs text-neutral-500">Tipas: {order.serviceType}</p>
-                            <p className="text-xs text-neutral-500">Užsakymo Nr.: {order.orderNumber}</p>
-                            <p className="text-xs text-neutral-500">Data: {formatDate(order.orderDate)}</p>
+                        <div className="flex-1">
+                            <h3 className="text-base sm:text-lg font-semibold text-neutral-700">{order.clientName}</h3>
+                            <div className="grid grid-cols-2 gap-2 mt-1 text-xs text-neutral-500">
+                                <p>Tipas: {order.serviceType}</p>
+                                <p>Nr.: {order.orderNumber}</p>
+                                <p>Data: {formatDate(order.orderDate)}</p>
+                                <p>Trukmė: {calculateDurationHours(order.startTime, order.endTime).toFixed(1)}h</p>
+                            </div>
                         </div>
-                        <div className="mt-2 sm:mt-0 sm:text-right">
-                            <p className="text-xl font-bold text-neutral-800">{formatCurrency(order.orderAmount)}</p>
+                        <div className="mt-3 sm:mt-0 sm:text-right flex sm:flex-col items-start sm:items-end justify-between sm:justify-start">
+                            <p className="text-lg sm:text-xl font-bold text-neutral-800">{formatCurrency(order.orderAmount)}</p>
                             {order.paymentMethod === PaymentMethod.TRANSFER && (
                                 <button 
                                     onClick={() => toggleOrderPaidStatus(order.id)}
-                                    className={`mt-1 text-xs font-semibold py-1 px-2 rounded-full flex items-center
+                                    className={`mt-1 text-xs font-semibold py-1 px-2 rounded-full inline-flex items-center
                                         ${order.isPaid ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}
                                 >
-                                    {order.isPaid ? <CheckCircleIcon className="w-4 h-4 mr-1"/> : <XCircleIcon className="w-4 h-4 mr-1"/>}
-                                    {order.isPaid ? 'Apmokėta' : 'Laukiama apmokėjimo'}
+                                    {order.isPaid ? <CheckCircleIcon className="w-3 h-3 mr-1"/> : <XCircleIcon className="w-3 h-3 mr-1"/>}
+                                    <span className="hidden sm:inline">{order.isPaid ? 'Apmokėta' : 'Laukiama apmokėjimo'}</span>
+                                    <span className="sm:hidden">{order.isPaid ? 'Apm.' : 'Laukia'}</span>
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
-                        <div>
-                            <p><span className="font-medium text-neutral-600">Pradžia:</span> {formatDateTime(order.startTime)}</p>
-                            <p><span className="font-medium text-neutral-600">Pabaiga:</span> {formatDateTime(order.endTime)}</p>
-                            <p><span className="font-medium text-neutral-600">Trukmė:</span> {calculateDurationHours(order.startTime, order.endTime).toFixed(2)} val.</p>
+                    <div className="space-y-2 text-sm mb-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <p><span className="font-medium text-neutral-600">Pradžia:</span> <span className="text-xs sm:text-sm">{formatDateTime(order.startTime)}</span></p>
+                                <p><span className="font-medium text-neutral-600">Pabaiga:</span> <span className="text-xs sm:text-sm">{formatDateTime(order.endTime)}</span></p>
+                            </div>
+                            <div className="space-y-1">
+                                <p><span className="font-medium text-neutral-600">Mokėjimas:</span> {order.paymentMethod}</p>
+                                <p><span className="font-medium text-neutral-600">Išlaidos:</span> {formatCurrency(order.orderSpecificExpenses)}</p>
+                            </div>
                         </div>
+                        
                         <div>
-                            <p><span className="font-medium text-neutral-600">Mokėjimo būdas:</span> {order.paymentMethod}</p>
-                            <p><span className="font-medium text-neutral-600">Darbuotojai:</span> {order.assignedEmployeeIds.map(id => employees.find(e => e.id === id)?.name).join(', ') || 'N/A'}</p>
-                            <p><span className="font-medium text-neutral-600">Užsakymo išlaidos:</span> {formatCurrency(order.orderSpecificExpenses)}</p>
-                             {order.extraKilometers > 0 && (
+                            <p><span className="font-medium text-neutral-600">Darbuotojai:</span> 
+                                <span className="text-xs sm:text-sm">{order.assignedEmployeeIds.map(id => employees.find(e => e.id === id)?.name).join(', ') || 'N/A'}</span>
+                            </p>
+                            {order.extraKilometers > 0 && (
                                 <p><span className="font-medium text-neutral-600">{extraKmLabel}:</span> {order.extraKilometers} km ({formatCurrency(kmCost)})</p>
                             )}
                         </div>
@@ -72,13 +82,15 @@ const OrderList: React.FC<OrderListProps> = ({ orders, onEditOrder }) => {
                     {order.notes && (
                         <div className="mb-3 p-2 bg-neutral-50 rounded text-xs text-neutral-600">
                             <p className="font-medium">Pastabos:</p>
-                            <p>{order.notes}</p>
+                            <p className="mt-1">{order.notes}</p>
                         </div>
                     )}
                     
-                    <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
-                        <div>
-                            <p className="text-xs text-neutral-500">Pelnas (užsakymas - darbuotojai - spec. išlaidos): 
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-neutral-200 gap-3">
+                        <div className="flex-1">
+                            <p className="text-xs text-neutral-500">
+                                <span className="hidden sm:inline">Pelnas (užsakymas - darbuotojai - spec. išlaidos): </span>
+                                <span className="sm:hidden">Pelnas: </span>
                                 <span className={`font-semibold ${ (order.calculatedNetRevenue || 0) - order.orderSpecificExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {formatCurrency((order.calculatedNetRevenue || 0) - order.orderSpecificExpenses)}
                                 </span>
@@ -86,14 +98,16 @@ const OrderList: React.FC<OrderListProps> = ({ orders, onEditOrder }) => {
                         </div>
                         <div className="flex space-x-2">
                             <Button size="sm" variant="secondary" onClick={() => onEditOrder(order)} leftIcon={<PencilIcon className="w-4 h-4"/>}>
-                                Redaguoti
+                                <span className="hidden sm:inline">Redaguoti</span>
+                                <span className="sm:hidden">Red.</span>
                             </Button>
                             <Button size="sm" variant="danger" onClick={() => {
                                 if (window.confirm(`Ar tikrai norite ištrinti užsakymą ${order.orderNumber}?`)) {
                                     deleteOrder(order.id);
                                 }
                             }} leftIcon={<TrashIcon className="w-4 h-4"/>}>
-                                Trinti
+                                <span className="hidden sm:inline">Trinti</span>
+                                <span className="sm:hidden">Trin.</span>
                             </Button>
                         </div>
                     </div>

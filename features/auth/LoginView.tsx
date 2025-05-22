@@ -25,34 +25,34 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-neutral-100 flex flex-col items-center justify-center p-3 sm:p-4">
       <div className="w-full max-w-md">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 sm:mb-8">
             <img 
                 src="https://mesjaucia.lt/wp-content/themes/mjcDesign/images/logoMJC.png" 
                 alt="MES JAU ČIA Logo" 
-                className="h-20 mx-auto mb-4" 
+                className="h-16 sm:h-20 mx-auto mb-3 sm:mb-4" 
               />
-            <h1 className="text-3xl font-bold text-neutral-800">MES JAU ČIA skaičiuolė</h1>
-            <p className="text-neutral-600">Prašome prisijungti</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-800">MES JAU ČIA skaičiuolė</h1>
+            <p className="text-sm sm:text-base text-neutral-600 mt-1">Prašome prisijungti</p>
           </div>
-        <Card title="Prisijungimas">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Card title="Prisijungimas" className="shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <Input
               label="Prisijungimo Kodas"
-              type="password" // Galima naudoti 'text' arba 'password'
+              type="password"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Įveskite kodą"
               error={error}
               containerClassName="mb-0"
             />
-            <Button type="submit" variant="primary" className="w-full">
+            <Button type="submit" variant="primary" className="w-full" size="md">
               Prisijungti
             </Button>
           </form>
         </Card>
-        <footer className="text-center p-4 text-sm text-neutral-500 mt-8">
+        <footer className="text-center p-3 sm:p-4 text-xs sm:text-sm text-neutral-500 mt-6 sm:mt-8">
             © {new Date().getFullYear()} MES JAU ČIA
         </footer>
       </div>

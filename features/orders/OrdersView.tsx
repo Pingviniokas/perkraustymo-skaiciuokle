@@ -40,46 +40,54 @@ const OrdersView: React.FC = () => {
   }, [orders, filterDate, filterMonth, filterType]);
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-neutral-200">
-        <h2 className="text-2xl font-semibold text-neutral-800 mb-4 sm:mb-0">Užsakymai</h2>
-        <Button onClick={openModalToCreate} variant="primary" leftIcon={<PlusCircleIcon className="w-5 h-5"/>}>
-          Pridėti naują užsakymą
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-neutral-200">
+        <h2 className="text-xl sm:text-2xl font-semibold text-neutral-800">Užsakymai</h2>
+        <Button 
+          onClick={openModalToCreate} 
+          variant="primary" 
+          leftIcon={<PlusCircleIcon className="w-5 h-5"/>}
+          className="w-full sm:w-auto"
+        >
+          <span className="sm:hidden">Pridėti užsakymą</span>
+          <span className="hidden sm:inline">Pridėti naują užsakymą</span>
         </Button>
       </div>
 
-      <div className="mb-6 p-4 bg-neutral-50 rounded-lg shadow-sm flex flex-wrap items-end gap-4">
-        <div>
-            <label htmlFor="filterType" className="block text-sm font-medium text-neutral-700 mb-1">Filtruoti pagal:</label>
-            <select 
-                id="filterType"
-                value={filterType} 
-                onChange={(e) => setFilterType(e.target.value as 'date' | 'month' | 'all')}
-                className="block w-full sm:w-auto px-3 py-2 bg-white border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-neutral-500 focus:border-neutral-500 sm:text-sm"
-            >
-                <option value="date">Dieną</option>
-                <option value="month">Mėnesį</option>
-                <option value="all">Visus</option>
-            </select>
+      <div className="p-3 sm:p-4 bg-neutral-50 rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div>
+              <label htmlFor="filterType" className="block text-sm font-medium text-neutral-700 mb-1">Filtruoti pagal:</label>
+              <select 
+                  id="filterType"
+                  value={filterType} 
+                  onChange={(e) => setFilterType(e.target.value as 'date' | 'month' | 'all')}
+                  className="block w-full px-3 py-2 bg-white border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-neutral-500 focus:border-neutral-500 text-sm"
+              >
+                  <option value="date">Dieną</option>
+                  <option value="month">Mėnesį</option>
+                  <option value="all">Visus</option>
+              </select>
+          </div>
+          {filterType === 'date' && (
+              <Input 
+                  label="Pasirinkite datą"
+                  type="date" 
+                  value={filterDate} 
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  containerClassName="mb-0"
+              />
+          )}
+          {filterType === 'month' && (
+              <Input
+                  label="Pasirinkite mėnesį"
+                  type="month"
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                  containerClassName="mb-0"
+              />
+          )}
         </div>
-        {filterType === 'date' && (
-            <Input 
-                label="Pasirinkite datą"
-                type="date" 
-                value={filterDate} 
-                onChange={(e) => setFilterDate(e.target.value)}
-                containerClassName="mb-0"
-            />
-        )}
-        {filterType === 'month' && (
-            <Input
-                label="Pasirinkite mėnesį"
-                type="month"
-                value={filterMonth}
-                onChange={(e) => setFilterMonth(e.target.value)}
-                containerClassName="mb-0"
-            />
-        )}
       </div>
       
       <OrderList orders={filteredOrders} onEditOrder={openModalToEdit} />

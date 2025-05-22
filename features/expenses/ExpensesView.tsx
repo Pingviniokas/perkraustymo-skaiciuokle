@@ -44,33 +44,41 @@ const ExpensesView: React.FC = () => {
   }, [filteredExpenses]);
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-neutral-200">
-        <h2 className="text-2xl font-semibold text-neutral-800 mb-4 sm:mb-0">Išlaidos</h2>
-        <Button onClick={openModalToCreate} variant="primary" leftIcon={<PlusCircleIcon className="w-5 h-5"/>}>
-          Pridėti naują išlaidą
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-neutral-200">
+        <h2 className="text-xl sm:text-2xl font-semibold text-neutral-800">Išlaidos</h2>
+        <Button 
+          onClick={openModalToCreate} 
+          variant="primary" 
+          leftIcon={<PlusCircleIcon className="w-5 h-5"/>}
+          className="w-full sm:w-auto"
+        >
+          <span className="sm:hidden">Pridėti išlaidą</span>
+          <span className="hidden sm:inline">Pridėti naują išlaidą</span>
         </Button>
       </div>
 
-       <div className="mb-6 p-4 bg-neutral-50 rounded-lg shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-        <Input
-            label="Filtruoti pagal mėnesį"
-            type="month"
-            value={filterMonth}
-            onChange={(e) => setFilterMonth(e.target.value)}
-            containerClassName="mb-0"
-        />
-        <Select
-            label="Filtruoti pagal kategoriją"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value as ExpenseCategory | '')}
-            options={[{ value: '', label: 'Visos kategorijos' }, ...EXPENSE_CATEGORIES_OPTIONS.map(cat => ({ value: cat, label: cat }))]}
-            containerClassName="mb-0"
-        />
-         <Card className="sm:col-span-2 lg:col-span-1 shadow-none bg-transparent" bodyClassName="p-0">
-            <p className="text-sm text-neutral-600">Filtruotų išlaidų suma:</p>
-            <p className="text-xl font-semibold text-red-700">{formatCurrency(totalFilteredExpenses)}</p>
-         </Card>
+       <div className="p-3 sm:p-4 bg-neutral-50 rounded-lg shadow-sm">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-end">
+          <Input
+              label="Filtruoti pagal mėnesį"
+              type="month"
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              containerClassName="mb-0"
+          />
+          <Select
+              label="Filtruoti pagal kategoriją"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value as ExpenseCategory | '')}
+              options={[{ value: '', label: 'Visos kategorijos' }, ...EXPENSE_CATEGORIES_OPTIONS.map(cat => ({ value: cat, label: cat }))]}
+              containerClassName="mb-0"
+          />
+           <Card className="sm:col-span-2 lg:col-span-1 shadow-none bg-white border border-neutral-200" bodyClassName="p-3">
+              <p className="text-sm text-neutral-600">Filtruotų išlaidų suma:</p>
+              <p className="text-lg sm:text-xl font-semibold text-red-700">{formatCurrency(totalFilteredExpenses)}</p>
+           </Card>
+         </div>
       </div>
 
       <ExpenseList expenses={filteredExpenses} onEditExpense={openModalToEdit} />
