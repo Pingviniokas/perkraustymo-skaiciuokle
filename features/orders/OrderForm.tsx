@@ -100,7 +100,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
       formData.serviceType,
       fullStartTime,
       fullEndTime,
-      numMoversForCalc, 
+      formData.assignedEmployeeIds,
+      employees,
       formData.orderDate,
       formData.applyWeekdayOvertime,
       formData.extraKilometers
@@ -131,13 +132,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
         ) {
         
         const oldSuggestedAmountForEdit = orderToEdit ? calculateOrderAmount(
-            orderToEdit.serviceType, orderToEdit.startTime, orderToEdit.endTime, 
-            (orderToEdit.serviceType === ServiceType.MOVING ? orderToEdit.assignedEmployeeIds.filter(id => {
-                const emp = employees.find(e => e.id === id);
-                return emp && !emp.name.toLowerCase().includes('fiskaro');
-            }).length : 0), 
+            orderToEdit.serviceType, 
+            orderToEdit.startTime, 
+            orderToEdit.endTime, 
+            orderToEdit.assignedEmployeeIds,
+            employees,
             orderToEdit.orderDate, 
-            orderToEdit.applyWeekdayOvertime, orderToEdit.extraKilometers
+            orderToEdit.applyWeekdayOvertime, 
+            orderToEdit.extraKilometers
         ) : 0;
 
         if (!orderToEdit || parseFloat(formData.orderAmountInput) === oldSuggestedAmountForEdit ) {
@@ -175,7 +177,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
                 initial.serviceType, 
                 combineDateAndTime(initial.orderDate, initial.startTime), 
                 combineDateAndTime(initial.orderDate, initial.endTime), 
-                initialNumMovers,
+                initial.assignedEmployeeIds,
+                employees,
                 initial.orderDate, 
                 initial.applyWeekdayOvertime, 
                 initial.extraKilometers
@@ -387,7 +390,19 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
         {getSectionHeader("Darbuotojai", <UsersIcon className="w-5 h-5" />)}
          <p className="text-xs text-neutral-500 mb-1 ml-1">
             {formData.serviceType === ServiceType.MOVING 
-                ? `Pasirinkite krovėjus. Kaina skaičiuojama pagal: ${numActualMovers} krovėjas(-ai) × ${formatCurrency(MOVER_RATE_CLIENT)}/val + ${formatCurrency(VAN_RATE_CLIENT)}/val už auto.`
+                ? (() => {
+                    const selectedMovers = formData.assignedEmployeeIds
+                      .map(id => employees.find(e => e.id === id))
+                      .filter(emp => emp && !emp.name.toLowerCase().includes('fiskaro'))
+                      .filter(Boolean) as Employee[];
+                    
+                    if (selectedMovers.length === 0) {
+                      return `Pasirinkite krovėjus. Kaina bus skaičiuojama pagal pasirinktų darbuotojų įkainius + ${formatCurrency(VAN_RATE_CLIENT)}/val už auto.`;
+                    }
+                    
+                    const totalClientRate = selectedMovers.reduce((sum, emp) => sum + emp.clientRate, 0);
+                    return `Pasirinkti krovėjai (${selectedMovers.length}): ${formatCurrency(totalClientRate)}/val + ${formatCurrency(VAN_RATE_CLIENT)}/val už auto = ${formatCurrency(totalClientRate + VAN_RATE_CLIENT)}/val`;
+                  })()
                 : `Pasirinkite Fiskaro operatorių. Kaina: fiksuota pagal trukmę.` 
             }
           </p>

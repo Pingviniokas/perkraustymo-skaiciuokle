@@ -1,4 +1,3 @@
-
 import { Order, Expense, Employee, PaymentMethod, ServiceType, SalaryPayout } from '../types';
 import { 
     MOVER_RATE_CLIENT, 
@@ -15,7 +14,8 @@ export const calculateOrderAmount = (
   serviceType: ServiceType,
   startTimeStr: string,
   endTimeStr: string,
-  numMovers: number,
+  assignedEmployeeIds: string[],
+  employees: Employee[],
   orderDateStr: string,
   applyWeekdayOvertime: boolean,
   extraKilometers: number
@@ -26,7 +26,15 @@ export const calculateOrderAmount = (
 
   if (serviceType === ServiceType.MOVING) {
     if (duration > 0) {
-        const hourlyRateForMovingTime = (numMovers * MOVER_RATE_CLIENT) + VAN_RATE_CLIENT;
+        const totalMoverClientRate = assignedEmployeeIds.reduce((sum, empId) => {
+          const employee = employees.find(e => e.id === empId);
+          if (employee && !employee.name.toLowerCase().includes('fiskaro')) {
+            return sum + employee.clientRate;
+          }
+          return sum;
+        }, 0);
+        
+        const hourlyRateForMovingTime = totalMoverClientRate + VAN_RATE_CLIENT;
         if (isWeekend(orderDateStr)) {
             timeBasedAmount = hourlyRateForMovingTime * duration * 1.5;
         } else { 

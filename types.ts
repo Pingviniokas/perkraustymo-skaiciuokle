@@ -1,5 +1,3 @@
-
-
 export enum PaymentMethod {
   CASH = 'Grynais',
   TRANSFER = 'Banko pavedimu',
@@ -19,7 +17,8 @@ export enum ExpenseCategory {
 export interface Employee {
   id: string;
   name: string;
-  hourlyRate: number; // Standard hourly rate for this employee
+  hourlyRate: number; // What company pays the employee
+  clientRate: number; // What company charges customer for this employee
 }
 
 export enum ServiceType {

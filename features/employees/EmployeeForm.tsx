@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Employee } from '../../types';
 import { useAppContext } from '../../contexts/AppContext';
@@ -16,6 +15,7 @@ interface EmployeeFormProps {
 const initialFormData: Omit<Employee, 'id'> = {
   name: '',
   hourlyRate: DEFAULT_MOVER_SALARY_RATE,
+  clientRate: 20, // Default client rate
 };
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employeeToEdit }) => {
@@ -28,6 +28,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employeeTo
       setFormData({
         name: employeeToEdit.name,
         hourlyRate: employeeToEdit.hourlyRate,
+        clientRate: employeeToEdit.clientRate || 20, // Default to 20 if not set
       });
     } else {
       setFormData(initialFormData);
@@ -39,7 +40,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employeeTo
     const { name, value } = e.target;
     setFormData(prev => ({ 
         ...prev, 
-        [name]: name === 'hourlyRate' ? parseFloat(value) || 0 : value 
+        [name]: (name === 'hourlyRate' || name === 'clientRate') ? parseFloat(value) || 0 : value 
     }));
   };
 
@@ -52,6 +53,10 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employeeTo
     }
     if (formData.hourlyRate <= 0) {
         setError('Valandinis įkainis turi būti didesnis už 0.');
+        return;
+    }
+    if (formData.clientRate <= 0) {
+        setError('Klientui taikomas įkainis turi būti didesnis už 0.');
         return;
     }
 
@@ -79,6 +84,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employeeTo
             type="number" 
             name="hourlyRate" 
             value={formData.hourlyRate.toString()} 
+            onChange={handleChange} 
+            step="0.01" 
+            min="0.01"
+            required 
+        />
+        <Input 
+            label="Klientui taikomas įkainis (€)" 
+            type="number" 
+            name="clientRate" 
+            value={formData.clientRate.toString()} 
             onChange={handleChange} 
             step="0.01" 
             min="0.01"

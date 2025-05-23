@@ -86,7 +86,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               ? firebaseData.employees.map((emp: Employee) => ({
                   ...emp,
                   name: emp.name || `Darbuotojas ${emp.id}`,
-                  hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE
+                  hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE,
+                  clientRate: emp.clientRate || 20 // Default client rate for existing employees
                 }))
               : INITIAL_EMPLOYEES, // Use initial employees if none in Firebase
             salaryPayouts: firebaseData.salaryPayouts || [],
@@ -103,7 +104,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               employees: (parsedData.employees || INITIAL_EMPLOYEES).map((emp: Employee) => ({
                 ...emp,
                 name: emp.name || `Darbuotojas ${emp.id}`,
-                hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE
+                hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE,
+                clientRate: emp.clientRate || 20 // Default client rate for existing employees
               })),
               salaryPayouts: parsedData.salaryPayouts || [],
             };
@@ -126,7 +128,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               employees: (data.employees || INITIAL_EMPLOYEES).map((emp: Employee) => ({
                    ...emp,
                   name: emp.name || `Darbuotojas ${emp.id}`,
-                  hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE
+                  hourlyRate: emp.hourlyRate || DEFAULT_MOVER_SALARY_RATE,
+                  clientRate: emp.clientRate || 20 // Default client rate for existing employees
               })),
               salaryPayouts: data.salaryPayouts || [],
           };
