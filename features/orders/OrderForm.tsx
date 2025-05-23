@@ -22,8 +22,8 @@ interface OrderFormProps {
 interface OrderFormData {
   serviceType: ServiceType;
   orderDate: string;
-  startTime: string;
-  endTime: string;
+  startTime: string; // Now just time format like "09:00"
+  endTime: string;   // Now just time format like "17:00"
   clientName: string;
   paymentMethod: PaymentMethod;
   orderSpecificExpenses: number;
@@ -38,12 +38,22 @@ interface OrderFormData {
 
 const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) => {
   const { addOrder, updateOrder, employees } = useAppContext();
+
+  // Helper function to combine date and time into datetime-local format
+  const combineDateAndTime = (date: string, time: string): string => {
+    return `${date}T${time}`;
+  };
+
+  // Helper function to extract time from datetime-local format
+  const extractTimeFromDateTime = (dateTime: string): string => {
+    return dateTime.split('T')[1] || "09:00";
+  };
   
   const getInitialFormData = (): OrderFormData => ({
     serviceType: ServiceType.MOVING,
     orderDate: getCurrentDateISO(),
-    startTime: getCurrentDateTimeLocal(),
-    endTime: getCurrentDateTimeLocal(),
+    startTime: "09:00", // Default start time
+    endTime: "17:00",   // Default end time
     clientName: '',
     paymentMethod: PaymentMethod.CASH,
     orderSpecificExpenses: 0,
@@ -82,10 +92,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
         }).length;
     }
 
+    // Combine date and time for calculations
+    const fullStartTime = combineDateAndTime(formData.orderDate, formData.startTime);
+    const fullEndTime = combineDateAndTime(formData.orderDate, formData.endTime);
+
     const suggestedAmount = calculateOrderAmount(
       formData.serviceType,
-      formData.startTime,
-      formData.endTime,
+      fullStartTime,
+      fullEndTime,
       numMoversForCalc, 
       formData.orderDate,
       formData.applyWeekdayOvertime,
@@ -97,8 +111,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
     setCalculatedKmCost(formData.extraKilometers * kmRate);
 
     const employeeCost = calculateEmployeeCostForOrder(
-        formData.startTime,
-        formData.endTime,
+        fullStartTime,
+        fullEndTime,
         formData.assignedEmployeeIds,
         employees
     );
@@ -106,8 +120,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
     
      if (!orderToEdit || formData.orderAmountInput === '0' || 
         (orderToEdit && orderToEdit.orderAmount.toString() === formData.orderAmountInput && 
-         (orderToEdit.startTime !== formData.startTime || 
-          orderToEdit.endTime !== formData.endTime || 
+         (extractTimeFromDateTime(orderToEdit.startTime) !== formData.startTime || 
+          extractTimeFromDateTime(orderToEdit.endTime) !== formData.endTime || 
           orderToEdit.assignedEmployeeIds.length !== formData.assignedEmployeeIds.length || // This comparison might need refinement if IDs change but count stays same
           orderToEdit.orderDate !== formData.orderDate || 
           orderToEdit.applyWeekdayOvertime !== formData.applyWeekdayOvertime ||
@@ -139,8 +153,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
             setFormData({
                 serviceType: orderToEdit.serviceType,
                 orderDate: orderToEdit.orderDate,
-                startTime: orderToEdit.startTime,
-                endTime: orderToEdit.endTime,
+                startTime: extractTimeFromDateTime(orderToEdit.startTime),
+                endTime: extractTimeFromDateTime(orderToEdit.endTime),
                 clientName: orderToEdit.clientName,
                 paymentMethod: orderToEdit.paymentMethod,
                 orderSpecificExpenses: orderToEdit.orderSpecificExpenses,
@@ -158,8 +172,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
                 return emp && !emp.name.toLowerCase().includes('fiskaro');
             }).length : 0;
             const initialSuggestedAmount = calculateOrderAmount(
-                initial.serviceType, initial.startTime, initial.endTime, initialNumMovers,
-                initial.orderDate, initial.applyWeekdayOvertime, initial.extraKilometers
+                initial.serviceType, 
+                combineDateAndTime(initial.orderDate, initial.startTime), 
+                combineDateAndTime(initial.orderDate, initial.endTime), 
+                initialNumMovers,
+                initial.orderDate, 
+                initial.applyWeekdayOvertime, 
+                initial.extraKilometers
             );
             setFormData({...initial, orderAmountInput: initialSuggestedAmount.toString()});
         }
@@ -201,6 +220,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
                 return { ...prev, [name]: newServiceType, assignedEmployeeIds: stillValidAssignedEmployees };
             });
             return; // Return early as setFormData was called with a function
+
         }
         setFormData(prev => ({ ...prev, [name]: newValue }));
     }
@@ -219,7 +239,11 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
     e.preventDefault();
     const finalOrderAmount = parseFloat(formData.orderAmountInput) || 0;
 
-    const duration = calculateDurationHours(formData.startTime, formData.endTime);
+    // Combine date and time for duration calculation
+    const fullStartTime = combineDateAndTime(formData.orderDate, formData.startTime);
+    const fullEndTime = combineDateAndTime(formData.orderDate, formData.endTime);
+    
+    const duration = calculateDurationHours(fullStartTime, fullEndTime);
     if (duration <= 0 && formData.extraKilometers <= 0 && finalOrderAmount <=0) {
         alert("Užsakymo suma, trukmė arba kilometrai turi būti didesni už 0.");
         return;
@@ -233,8 +257,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
     const orderDataForSubmit: Omit<Order, 'id' | 'orderNumber' | 'calculatedNetRevenue'> = {
         serviceType: formData.serviceType,
         orderDate: formData.orderDate,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
+        startTime: fullStartTime, // Store combined datetime
+        endTime: fullEndTime,     // Store combined datetime
         clientName: formData.clientName,
         paymentMethod: formData.paymentMethod,
         orderAmount: finalOrderAmount,
@@ -295,8 +319,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, orderToEdit }) =
             <Input label="Užsakymo data" type="date" name="orderDate" value={formData.orderDate} onChange={handleChange} required containerClassName="mb-3" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <Input label="Pradžios laikas" type="datetime-local" name="startTime" value={formData.startTime} onChange={handleChange} required containerClassName="mb-3" />
-            <Input label="Pabaigos laikas" type="datetime-local" name="endTime" value={formData.endTime} onChange={handleChange} required containerClassName="mb-3" />
+            <Input label="Pradžios laikas" type="time" name="startTime" value={formData.startTime} onChange={handleChange} required containerClassName="mb-3" />
+            <Input label="Pabaigos laikas" type="time" name="endTime" value={formData.endTime} onChange={handleChange} required containerClassName="mb-3" />
         </div>
 
         {/* Fix: Replaced UserCircleIcon with UsersIcon */}
